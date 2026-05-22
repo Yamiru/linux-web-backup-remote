@@ -15,15 +15,13 @@ on the remote.
 
 - [👋 Before you start](#-before-you-start)
 - [📥 Step 0 – Get the script on your server](#-step-0-get-the-script-on-your-server)
-  - [🪟 Upload from Windows](#-upload-from-windows)
-  - [🍎 Upload from Mac](#-upload-from-mac)
-  - [🐧 Upload from Linux desktop](#-upload-from-linux-desktop)
-  - [📋 Or copy-paste directly on the server](#-or-copy-paste-directly-on-the-server)
 - [🪟 Setup Guide – WINDOWS users](#-setup-guide-windows-users)
 - [🍎 Setup Guide – MAC users](#-setup-guide-mac-users)
 - [🐧 Setup Guide – LINUX users](#-setup-guide-linux-users)
 - [⚙ Configuration](#-configuration)
 - [🎛 Backup Modes](#-backup-modes)
+- [🚫 Excluding files and folders](#-excluding-files-and-folders)
+- [📖 Recipes — copy-paste configs](#-recipes-copy-paste-configs-for-common-setups)
 - [🌐 Other cloud providers](#-other-cloud-providers)
 - [📁 Restore Example](#-restore-example)
 - [🛠 Troubleshooting](#-troubleshooting)
@@ -67,224 +65,89 @@ Follow the guide top to bottom:
 
 ## 📥 Step 0 – Get the script on your server
 
-Before anything else, the `backup_www.sh` file from this project must
-**live on your server**. There are a few ways to put it there. Pick the
-one that fits your situation.
+The `backup_www.sh` file must **live on your server** before you continue.
+The easiest way: download it straight from GitHub with one command.
+
+### The easy way (recommended)
+
+🟦 SSH into your server, then run these commands one by one:
+
+```bash
+sudo mkdir -p /opt/linux-web-backup
+sudo curl -L -o /opt/linux-web-backup/backup_www.sh \
+    https://raw.githubusercontent.com/Yamiru/linux-web-backup-remote/main/backup_www.sh
+sudo chmod +x /opt/linux-web-backup/backup_www.sh
+```
+
+✅ That's it. The script is now on your server at
+`/opt/linux-web-backup/backup_www.sh` and ready to use.
+
+Verify it worked:
+
+```bash
+ls -la /opt/linux-web-backup/backup_www.sh
+```
+
+You should see something like:
+
+```
+-rwxr-xr-x 1 root root 11506 May 22 17:00 /opt/linux-web-backup/backup_www.sh
+```
+
+> 💡 The `-rwxr-xr-x` at the start means the file is executable. ✓
+
+✅ Step 0 done. Now pick your OS guide below.
 
 ------------------------------------------------------------------------
 
-### 🪟 Upload from Windows
+<details>
+<summary><b>📦 Alternative: upload from your own computer</b></summary>
 
-We'll use **WinSCP** — a free, easy program that lets you drag-and-drop
-files to your server.
+If for some reason `curl` doesn't work on your server (very rare),
+you can also download the script to your laptop first and then upload
+it. Pick your OS:
 
-#### 1. Download this project as ZIP
+### 🪟 From Windows (using WinSCP)
 
-1. 🖱️ Open https://github.com/yamiru/linux-web-backup-remote
-2. 🖱️ Click the green **"Code"** button (near the top right)
-3. 🖱️ Click **"Download ZIP"**
-4. The file `linux-web-backup-remote-main.zip` appears in your Downloads
-5. 🖱️ **Right-click** the zip → **"Extract All..."** → **"Extract"**
-6. Open the extracted folder. You'll see `backup_www.sh` and `README.md`
-   inside.
+1. 🖱️ Open https://github.com/Yamiru/linux-web-backup-remote/blob/main/backup_www.sh
+2. 🖱️ Click the **"Download raw file"** button (small download icon, top-right of file view)
+3. Save `backup_www.sh` to your computer
+4. Install **WinSCP** from https://winscp.net/eng/download.php
+5. Open WinSCP, connect to your server (SFTP, your server IP, port 22, your SSH user/password)
+6. On the server side, navigate to `/opt/`
+7. Right-click → New → Directory → name it `linux-web-backup`
+8. Drag `backup_www.sh` from your computer into that folder
+9. Right-click the file on the server → Properties → set permissions to `755` → OK
 
-#### 2. Install WinSCP
-
-1. 🖱️ Go to https://winscp.net/eng/download.php
-2. 🖱️ Click **"Download WinSCP"** (the big green button)
-3. 🖱️ Run the installer. Click *Next* until done.
-
-#### 3. Connect to your server
-
-1. 🖱️ Open WinSCP
-2. The **"Login"** window appears. Fill in:
-   - **File protocol:** SFTP
-   - **Host name:** your server's IP address (e.g. `123.45.67.89`)
-   - **Port number:** 22
-   - **User name:** your server username (often `root`)
-   - **Password:** your SSH password
-3. 🖱️ Click **"Login"**
-4. If asked about a "host key", click **"Yes"** (only the first time)
-
-You'll now see two panels:
-- **Left** = files on your Windows computer
-- **Right** = files on your server
-
-#### 4. Create the folder on the server
-
-1. In the **right panel** (server), at the top, type into the path bar:
-   ```
-   /opt/
-   ```
-   and press Enter
-2. 🖱️ **Right-click** in the empty space → **"New" → "Directory"**
-3. ⌨️ Type **`linux-web-backup-remote`** → click **OK**
-4. 🖱️ Double-click the new folder to enter it
-
-#### 5. Drag the script in
-
-1. In the **left panel** (Windows), navigate to where you extracted
-   the ZIP (usually `Downloads\linux-web-backup-remote-main`)
-2. 🖱️ **Drag** `backup_www.sh` from left to right
-3. WinSCP asks "Copy?" → click **"OK"**
-
-✅ The script is now on your server at
-`/opt/linux-web-backup-remote/backup_www.sh`.
-
-#### 6. Make it executable
-
-1. In WinSCP's right panel, **right-click** `backup_www.sh`
-2. Click **"Properties"**
-3. Find the **"Permissions"** row at the bottom
-4. Check the boxes so it shows: `rwxr-xr-x` (octal: `755`)\
-   *(or you can type `755` in the "Octal" field)*
-5. Click **"OK"**
-
-✅ Step 0 done. Now continue with
-[🪟 Setup Guide – WINDOWS users](#-setup-guide-windows-users).
-
-------------------------------------------------------------------------
-
-### 🍎 Upload from Mac
-
-We'll use the **Terminal** with the `scp` command.
-
-#### 1. Download this project
-
-Open **Terminal** on your Mac (Cmd+Space → "Terminal" → Enter), then:
+Then SSH into the server and verify:
 
 ```bash
-cd ~/Downloads
-curl -L -o linux-web-backup-remote.zip \
-    https://github.com/yamiru/linux-web-backup-remote/archive/refs/heads/main.zip
-unzip linux-web-backup-remote.zip
-cd linux-web-backup-remote-main
+ls -la /opt/linux-web-backup/backup_www.sh
 ```
 
-You should now have `backup_www.sh` in the current folder. Verify:
+### 🍎 From Mac
 
 ```bash
-ls
-```
+# On your Mac:
+curl -L -o backup_www.sh \
+    https://raw.githubusercontent.com/Yamiru/linux-web-backup-remote/main/backup_www.sh
 
-You should see `backup_www.sh`, `README.md`, `LICENSE`.
-
-#### 2. Upload to your server
-
-Replace `username` and `your-server-ip` with your actual server details:
-
-```bash
+# Upload to server (replace username and IP):
 scp backup_www.sh username@your-server-ip:/tmp/
-```
 
-If you've never connected before, type **yes** when asked about the
-host key. Then enter your SSH password.
-
-#### 3. Move to the right place on the server
-
-SSH into your server:
-
-```bash
+# SSH in and place it:
 ssh username@your-server-ip
+sudo mkdir -p /opt/linux-web-backup
+sudo mv /tmp/backup_www.sh /opt/linux-web-backup/
+sudo chmod +x /opt/linux-web-backup/backup_www.sh
 ```
 
-Now on the server:
+### 🐧 From Linux desktop
 
-```bash
-sudo mkdir -p /opt/linux-web-backup-remote
-sudo mv /tmp/backup_www.sh /opt/linux-web-backup-remote/
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
-```
+Same as Mac — `curl` to your machine, `scp` to the server, `mv` and `chmod`
+on the server.
 
-✅ Step 0 done. Now continue with
-[🍎 Setup Guide – MAC users](#-setup-guide-mac-users).
-
-------------------------------------------------------------------------
-
-### 🐧 Upload from Linux desktop
-
-#### 1. Download this project
-
-Open a terminal on your Linux desktop, then:
-
-```bash
-cd ~/Downloads
-curl -L -o linux-web-backup-remote.zip \
-    https://github.com/yamiru/linux-web-backup-remote/archive/refs/heads/main.zip
-unzip linux-web-backup-remote.zip
-cd linux-web-backup-remote-main
-```
-
-Verify:
-
-```bash
-ls
-```
-
-You should see `backup_www.sh`, `README.md`, `LICENSE`.
-
-#### 2. Upload to your server
-
-```bash
-scp backup_www.sh username@your-server-ip:/tmp/
-```
-
-#### 3. Move to the right place on the server
-
-```bash
-ssh username@your-server-ip
-```
-
-On the server:
-
-```bash
-sudo mkdir -p /opt/linux-web-backup-remote
-sudo mv /tmp/backup_www.sh /opt/linux-web-backup-remote/
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
-```
-
-✅ Step 0 done. Now continue with
-[🐧 Setup Guide – LINUX users](#-setup-guide-linux-users).
-
-------------------------------------------------------------------------
-
-### 📋 Or copy-paste directly on the server
-
-If you can't or don't want to upload from your local computer, you can
-create the file **directly on the server** through SSH.
-
-#### 1. SSH into your server
-
-#### 2. Open `backup_www.sh` from this project in your browser
-
-Go to:
-https://raw.githubusercontent.com/yamiru/linux-web-backup-remote/main/backup_www.sh
-
-🖱️ Select all (**Ctrl+A** on Win/Linux, **Cmd+A** on Mac) → copy
-(**Ctrl+C** / **Cmd+C**).
-
-#### 3. Create the folder and file on the server
-
-```bash
-sudo mkdir -p /opt/linux-web-backup-remote
-sudo nano /opt/linux-web-backup-remote/backup_www.sh
-```
-
-nano opens an empty editor.
-
-🖱️ **Right-click** to paste *(in PuTTY/Windows Terminal/MobaXterm)*\
-*(In iTerm2/Mac Terminal: Cmd+V)*\
-*(In Linux terminal: Ctrl+Shift+V)*
-
-Save: press **Ctrl+O** → **Enter** → **Ctrl+X**.
-
-#### 4. Make it executable
-
-```bash
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
-```
-
-✅ Step 0 done. Now continue with your OS guide below.
+</details>
 
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
@@ -295,7 +158,7 @@ sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
 > (Windows 10, Windows 11, etc.).
 >
 > ⚠️ Make sure you already finished
-> [📥 Step 0](#-upload-from-windows) — the `backup_www.sh` script must
+> [📥 Step 0](#-step-0-get-the-script-on-your-server) — the `backup_www.sh` script must
 > already be on the server.
 
 ------------------------------------------------------------------------
@@ -663,13 +526,13 @@ rclone lsd gdrive:
 ## 🪟 Step 8 – Run the backup script
 
 > 📌 The script should already be at
-> `/opt/linux-web-backup-remote/backup_www.sh` from Step 0. If not,
-> go back to [📥 Upload from Windows](#-upload-from-windows).
+> `/opt/linux-web-backup/backup_www.sh` from Step 0. If not,
+> go back to [📥 Step 0](#-step-0-get-the-script-on-your-server).
 
 Run it manually first:
 
 ```bash
-sudo /opt/linux-web-backup-remote/backup_www.sh
+sudo /opt/linux-web-backup/backup_www.sh
 ```
 
 You should see logs scrolling past, and the last line:
@@ -707,7 +570,7 @@ If asked which editor, choose **nano** (it's the easiest).
 Scroll to the bottom of the file and add this line:
 
 ```cron
-0 3 * * * /opt/linux-web-backup-remote/backup_www.sh >/dev/null 2>&1
+0 3 * * * /opt/linux-web-backup/backup_www.sh >/dev/null 2>&1
 ```
 
 > 💡 This means: every day at **03:00 AM** (3 hours after midnight), run
@@ -730,7 +593,7 @@ want to change settings.**
 > (macOS / OS X).
 >
 > ⚠️ Make sure you already finished
-> [📥 Step 0](#-upload-from-mac) — the `backup_www.sh` script must
+> [📥 Step 0](#-step-0-get-the-script-on-your-server) — the `backup_www.sh` script must
 > already be on the server.
 
 ------------------------------------------------------------------------
@@ -1020,11 +883,11 @@ rclone lsd gdrive:
 ## 🍎 Step 8 – Run the backup script
 
 > 📌 The script should already be at
-> `/opt/linux-web-backup-remote/backup_www.sh` from Step 0. If not,
-> go back to [📥 Upload from Mac](#-upload-from-mac).
+> `/opt/linux-web-backup/backup_www.sh` from Step 0. If not,
+> go back to [📥 Step 0](#-step-0-get-the-script-on-your-server).
 
 ```bash
-sudo /opt/linux-web-backup-remote/backup_www.sh
+sudo /opt/linux-web-backup/backup_www.sh
 ```
 
 ### 8.1 – Check Google Drive
@@ -1052,7 +915,7 @@ sudo crontab -e
 Add at the bottom:
 
 ```cron
-0 3 * * * /opt/linux-web-backup-remote/backup_www.sh >/dev/null 2>&1
+0 3 * * * /opt/linux-web-backup/backup_www.sh >/dev/null 2>&1
 ```
 
 Save and exit *(in nano: Ctrl+O, Enter, Ctrl+X)*.
@@ -1071,7 +934,7 @@ want to customize settings.**
 > Fedora, Mint, Debian, Arch, etc.).
 >
 > ⚠️ Make sure you already finished
-> [📥 Step 0](#-upload-from-linux-desktop) — the `backup_www.sh` script
+> [📥 Step 0](#-step-0-get-the-script-on-your-server) — the `backup_www.sh` script
 > must already be on the server.
 
 ------------------------------------------------------------------------
@@ -1332,11 +1195,11 @@ rclone lsd gdrive:
 ## 🐧 Step 8 – Run the backup script
 
 > 📌 The script should already be at
-> `/opt/linux-web-backup-remote/backup_www.sh` from Step 0. If not,
-> go back to [📥 Upload from Linux desktop](#-upload-from-linux-desktop).
+> `/opt/linux-web-backup/backup_www.sh` from Step 0. If not,
+> go back to [📥 Step 0](#-step-0-get-the-script-on-your-server).
 
 ```bash
-sudo /opt/linux-web-backup-remote/backup_www.sh
+sudo /opt/linux-web-backup/backup_www.sh
 ```
 
 ### 8.1 – Check Google Drive
@@ -1364,7 +1227,7 @@ sudo crontab -e
 Add at the bottom:
 
 ```cron
-0 3 * * * /opt/linux-web-backup-remote/backup_www.sh >/dev/null 2>&1
+0 3 * * * /opt/linux-web-backup/backup_www.sh >/dev/null 2>&1
 ```
 
 Save and exit. ✅ Done!
@@ -1393,6 +1256,16 @@ SPLIT_BY_SUBDIR=false   # false = full archive (default), true = per-subdir
 # Sources
 SOURCES=$(cat <<'EOF'
 /var/www
+EOF
+)
+
+# Exclude patterns (skip these inside archives, works in BOTH modes)
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+tmp
+.git
+node_modules
+*.log
 EOF
 )
 
@@ -1428,6 +1301,266 @@ SPLIT_BY_SUBDIR=true
 ```
 
 Use `EXCLUDE_SUBDIRS` to skip folders like `html`, `.well-known`, etc.
+
+------------------------------------------------------------------------
+
+## 🚫 Excluding files and folders
+
+You don't always want everything in the backup. Cache folders, logs,
+`node_modules`, and similar junk just waste space. The script has two
+separate ways to exclude things:
+
+### `EXCLUDE_PATTERNS` — exclude things **inside** archives (recommended)
+
+Works in **BOTH modes** (FULL and SPLIT). Passed directly to `tar` as
+`--exclude` arguments. Supports glob patterns:
+
+```bash
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache                # any folder named "cache" at any depth
+tmp                  # any folder named "tmp" at any depth
+.git                 # version control metadata
+node_modules         # JS/Node dependencies
+*.log                # all .log files anywhere
+*.cache              # all .cache files
+storage/logs         # specific path
+EOF
+)
+```
+
+✅ Examples that match:
+- `cache` matches `/var/www/web1/cache/`, `/var/www/web2/cache/`, etc.
+- `*.log` matches `/var/www/web1/access.log`, `/var/www/web2/logs/error.log`
+- `storage/logs` matches `/var/www/web1/storage/logs/` *(exact path component)*
+
+> 💡 **Tip:** the patterns are interpreted by `tar`. See `man tar` for
+> the full syntax — but for 95% of cases, just folder names and `*.ext`
+> patterns are enough.
+
+> 💡 **Empty pattern list?** Just delete the lines between `EOF`s
+> *(or comment them out with `#`)*. The script handles an empty list
+> gracefully.
+
+### `EXCLUDE_SUBDIRS` — skip whole top-level folders (SPLIT mode only)
+
+Skip entire subdirectories during scanning *(no archive created at all)*.
+Only applies when `SPLIT_BY_SUBDIR=true`:
+
+```bash
+EXCLUDE_SUBDIRS=$(cat <<'EOF'
+html
+.well-known
+_letsencrypt
+EOF
+)
+```
+
+With `SOURCES=/var/www` and `SPLIT_BY_SUBDIR=true`, a folder named
+`/var/www/html` won't get its own `html.tar.gz`. The folder isn't
+"backed up smaller" — it's skipped entirely.
+
+### When to use which?
+
+| You want to...                                | Use                |
+|-----------------------------------------------|--------------------|
+| Skip a test/default site folder entirely      | `EXCLUDE_SUBDIRS`  |
+| Strip caches, logs, junk from inside backups  | `EXCLUDE_PATTERNS` |
+| Make backup smaller without losing whole sites | `EXCLUDE_PATTERNS` |
+| Exclude something in FULL mode                | `EXCLUDE_PATTERNS` |
+
+In practice you'll mostly use `EXCLUDE_PATTERNS`. The defaults
+(`cache`, `tmp`, `.git`, `node_modules`, `*.log`) are reasonable for
+most websites.
+
+### 💡 Key insight: patterns are mode-independent
+
+`tar --exclude` is **not anchored** — a pattern matches anywhere in the
+file path inside the archive. That means the **same pattern works in
+both modes**:
+
+- In **FULL mode**, archive path = `www/proserver/templates_c/...`\
+  → pattern `proserver/templates_c` matches the middle ✓
+- In **SPLIT mode**, archive path = `proserver/templates_c/...`\
+  → same pattern matches from the start ✓
+
+So **don't write `www/proserver/...`** — just `proserver/...`. It works
+identically regardless of `SPLIT_BY_SUBDIR`.
+
+------------------------------------------------------------------------
+
+## 📖 Recipes — copy-paste configs for common setups
+
+Don't reinvent the wheel. Pick the recipe that matches your situation,
+copy the config, paste it into `backup_www.sh`, done.
+
+### 🍳 Recipe 1: Multiple sites in `/var/www/<site>` (most common)
+
+You host several websites, each in its own subdirectory. You want
+**one archive per site** with junk files stripped out of each.
+
+```bash
+SPLIT_BY_SUBDIR=true
+
+SOURCES=$(cat <<'EOF'
+/var/www
+EOF
+)
+
+EXCLUDE_SUBDIRS=$(cat <<'EOF'
+html
+.well-known
+_letsencrypt
+EOF
+)
+
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+tmp
+.git
+node_modules
+*.log
+EOF
+)
+```
+
+Result: `web1.tar.gz`, `web2.tar.gz`, ... — each clean, no junk.
+
+### 🍳 Recipe 2: Mixed layout with shared folders in `/var/www`
+
+You have site folders **and** shared top-level folders like
+`/var/www/cache`, `/var/www/tmp`, `/var/www/uploads`, `/var/www/logs`
+that shouldn't be backed up as separate archives.
+
+Use `EXCLUDE_SUBDIRS` to skip those entire top-level folders, and
+`EXCLUDE_PATTERNS` for junk inside each site:
+
+```bash
+SPLIT_BY_SUBDIR=true
+
+SOURCES=$(cat <<'EOF'
+/var/www
+EOF
+)
+
+EXCLUDE_SUBDIRS=$(cat <<'EOF'
+html
+.well-known
+_letsencrypt
+cache
+tmp
+uploads
+logs
+EOF
+)
+
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+.git
+node_modules
+*.log
+EOF
+)
+```
+
+`EXCLUDE_SUBDIRS` makes sure no `cache.tar.gz` / `tmp.tar.gz` /
+`uploads.tar.gz` / `logs.tar.gz` ever gets created. `EXCLUDE_PATTERNS`
+then strips internal junk from each site archive.
+
+### 🍳 Recipe 3: Site-specific exclusions
+
+You want to exclude **specific paths in specific sites** — e.g. Smarty
+compiled templates only in `proserver`, phpMyAdmin in `avalonia`, PHP
+sessions in `avalonia/tmp/sessions`.
+
+Just add site-prefixed patterns. Works in **both** modes:
+
+```bash
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+.git
+node_modules
+*.log
+proserver/templates_c
+avalonia/phpmyadmin
+avalonia/tmp/sessions
+EOF
+)
+```
+
+> ⚠️ **Don't prefix with `www/`** — the patterns work without it in
+> both modes. Adding `www/` would make them match in FULL mode only
+> and silently fail in SPLIT mode.
+
+### 🍳 Recipe 4: One big archive of `/var/www`
+
+You don't care about per-site separation, you just want everything in
+`/var/www` in one tarball:
+
+```bash
+SPLIT_BY_SUBDIR=false
+
+SOURCES=$(cat <<'EOF'
+/var/www
+EOF
+)
+
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+tmp
+.git
+node_modules
+*.log
+EOF
+)
+```
+
+Result: one `www.tar.gz` per run. `EXCLUDE_SUBDIRS` is ignored in this
+mode — only `EXCLUDE_PATTERNS` apply.
+
+### 🍳 Recipe 5: Back up multiple unrelated paths
+
+You want to back up your web root **and** nginx config, with each as a
+separate archive:
+
+```bash
+SPLIT_BY_SUBDIR=false
+
+SOURCES=$(cat <<'EOF'
+/var/www
+/etc/nginx
+/etc/letsencrypt
+EOF
+)
+
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+tmp
+.git
+node_modules
+*.log
+EOF
+)
+```
+
+Result: `www.tar.gz`, `nginx.tar.gz`, `letsencrypt.tar.gz`.
+
+### 🐛 Troubleshooting your excludes
+
+After a run, check what actually ended up in the archive:
+
+```bash
+# List everything in the newest archive
+tar -tzf /opt/linux-web-backup/backups/$(ls -t /opt/linux-web-backup/backups | head -1)/proserver.tar.gz | head -30
+
+# Check if a specific pattern was excluded
+tar -tzf .../proserver.tar.gz | grep templates_c
+# empty output = ✓ excluded successfully
+```
+
+If something you wanted excluded is still there:
+- Check `Active exclude patterns: N` in the log to see how many were loaded
+- Drop the `www/` prefix if you have one
+- Make the pattern more specific: `proserver/templates_c` instead of just `templates_c`
 
 ------------------------------------------------------------------------
 
@@ -1535,7 +1668,7 @@ Some SSH clients mangle very long paste content. Try:
 Did you forget `chmod +x`? Run:
 
 ```bash
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
+sudo chmod +x /opt/linux-web-backup/backup_www.sh
 ```
 
 ------------------------------------------------------------------------
