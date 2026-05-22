@@ -14,9 +14,14 @@ on the remote.
 ## 📚 Table of Contents
 
 - [👋 Before you start](#-before-you-start)
-- [🪟 Setup Guide – WINDOWS users](#-setup-guide--windows-users)
-- [🍎 Setup Guide – MAC users](#-setup-guide--mac-users)
-- [🐧 Setup Guide – LINUX users](#-setup-guide--linux-users)
+- [📥 Step 0 – Get the script on your server](#-step-0-get-the-script-on-your-server)
+  - [🪟 Upload from Windows](#-upload-from-windows)
+  - [🍎 Upload from Mac](#-upload-from-mac)
+  - [🐧 Upload from Linux desktop](#-upload-from-linux-desktop)
+  - [📋 Or copy-paste directly on the server](#-or-copy-paste-directly-on-the-server)
+- [🪟 Setup Guide – WINDOWS users](#-setup-guide-windows-users)
+- [🍎 Setup Guide – MAC users](#-setup-guide-mac-users)
+- [🐧 Setup Guide – LINUX users](#-setup-guide-linux-users)
 - [⚙ Configuration](#-configuration)
 - [🎛 Backup Modes](#-backup-modes)
 - [🌐 Other cloud providers](#-other-cloud-providers)
@@ -42,24 +47,244 @@ Your **server** has no screen and no web browser. It's a "headless" machine.
 But Google requires you to log in through a browser to give permission.
 
 So we'll:
-1. Install a small tool called `rclone` on the **server**
-2. Install the same tool on your **laptop**
-3. Use the **laptop** to log in to Google (because it has a browser)
-4. Copy a special "permission key" from the laptop back to the server
-5. From then on, the **server** uploads on its own — forever
+1. Get the backup script onto the **server** (Step 0)
+2. Install `rclone` on the **server** (Step 1)
+3. Install the same `rclone` tool on your **laptop**
+4. Use the **laptop** to log in to Google (because it has a browser)
+5. Copy a special "permission key" from the laptop back to the server
+6. From then on, the **server** uploads on its own — forever
 
 You only do this once. After that, it's automatic.
 
-### Pick your guide
-Scroll down to the section that matches **your laptop's operating system**:
+### Order of operations
+Follow the guide top to bottom:
 
-- 🪟 **[Windows users → click here](#-setup-guide--windows-users)**
-- 🍎 **[Mac users → click here](#-setup-guide--mac-users)**
-- 🐧 **[Linux desktop users → click here](#-setup-guide--linux-users)**
+1. **Step 0** – get the script onto the server *(do this first!)*
+2. **Pick your OS guide** below and follow Steps 1–9
 
-> 💡 **The server is always Linux** — that's where the website lives.
-> The choice above is about **your own computer** (where you'll click
-> things in a browser).
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+## 📥 Step 0 – Get the script on your server
+
+Before anything else, the `backup_www.sh` file from this project must
+**live on your server**. There are a few ways to put it there. Pick the
+one that fits your situation.
+
+------------------------------------------------------------------------
+
+### 🪟 Upload from Windows
+
+We'll use **WinSCP** — a free, easy program that lets you drag-and-drop
+files to your server.
+
+#### 1. Download this project as ZIP
+
+1. 🖱️ Open https://github.com/yamiru/linux-web-backup-remote
+2. 🖱️ Click the green **"Code"** button (near the top right)
+3. 🖱️ Click **"Download ZIP"**
+4. The file `linux-web-backup-remote-main.zip` appears in your Downloads
+5. 🖱️ **Right-click** the zip → **"Extract All..."** → **"Extract"**
+6. Open the extracted folder. You'll see `backup_www.sh` and `README.md`
+   inside.
+
+#### 2. Install WinSCP
+
+1. 🖱️ Go to https://winscp.net/eng/download.php
+2. 🖱️ Click **"Download WinSCP"** (the big green button)
+3. 🖱️ Run the installer. Click *Next* until done.
+
+#### 3. Connect to your server
+
+1. 🖱️ Open WinSCP
+2. The **"Login"** window appears. Fill in:
+   - **File protocol:** SFTP
+   - **Host name:** your server's IP address (e.g. `123.45.67.89`)
+   - **Port number:** 22
+   - **User name:** your server username (often `root`)
+   - **Password:** your SSH password
+3. 🖱️ Click **"Login"**
+4. If asked about a "host key", click **"Yes"** (only the first time)
+
+You'll now see two panels:
+- **Left** = files on your Windows computer
+- **Right** = files on your server
+
+#### 4. Create the folder on the server
+
+1. In the **right panel** (server), at the top, type into the path bar:
+   ```
+   /opt/
+   ```
+   and press Enter
+2. 🖱️ **Right-click** in the empty space → **"New" → "Directory"**
+3. ⌨️ Type **`linux-web-backup-remote`** → click **OK**
+4. 🖱️ Double-click the new folder to enter it
+
+#### 5. Drag the script in
+
+1. In the **left panel** (Windows), navigate to where you extracted
+   the ZIP (usually `Downloads\linux-web-backup-remote-main`)
+2. 🖱️ **Drag** `backup_www.sh` from left to right
+3. WinSCP asks "Copy?" → click **"OK"**
+
+✅ The script is now on your server at
+`/opt/linux-web-backup-remote/backup_www.sh`.
+
+#### 6. Make it executable
+
+1. In WinSCP's right panel, **right-click** `backup_www.sh`
+2. Click **"Properties"**
+3. Find the **"Permissions"** row at the bottom
+4. Check the boxes so it shows: `rwxr-xr-x` (octal: `755`)\
+   *(or you can type `755` in the "Octal" field)*
+5. Click **"OK"**
+
+✅ Step 0 done. Now continue with
+[🪟 Setup Guide – WINDOWS users](#-setup-guide-windows-users).
+
+------------------------------------------------------------------------
+
+### 🍎 Upload from Mac
+
+We'll use the **Terminal** with the `scp` command.
+
+#### 1. Download this project
+
+Open **Terminal** on your Mac (Cmd+Space → "Terminal" → Enter), then:
+
+```bash
+cd ~/Downloads
+curl -L -o linux-web-backup-remote.zip \
+    https://github.com/yamiru/linux-web-backup-remote/archive/refs/heads/main.zip
+unzip linux-web-backup-remote.zip
+cd linux-web-backup-remote-main
+```
+
+You should now have `backup_www.sh` in the current folder. Verify:
+
+```bash
+ls
+```
+
+You should see `backup_www.sh`, `README.md`, `LICENSE`.
+
+#### 2. Upload to your server
+
+Replace `username` and `your-server-ip` with your actual server details:
+
+```bash
+scp backup_www.sh username@your-server-ip:/tmp/
+```
+
+If you've never connected before, type **yes** when asked about the
+host key. Then enter your SSH password.
+
+#### 3. Move to the right place on the server
+
+SSH into your server:
+
+```bash
+ssh username@your-server-ip
+```
+
+Now on the server:
+
+```bash
+sudo mkdir -p /opt/linux-web-backup-remote
+sudo mv /tmp/backup_www.sh /opt/linux-web-backup-remote/
+sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
+```
+
+✅ Step 0 done. Now continue with
+[🍎 Setup Guide – MAC users](#-setup-guide-mac-users).
+
+------------------------------------------------------------------------
+
+### 🐧 Upload from Linux desktop
+
+#### 1. Download this project
+
+Open a terminal on your Linux desktop, then:
+
+```bash
+cd ~/Downloads
+curl -L -o linux-web-backup-remote.zip \
+    https://github.com/yamiru/linux-web-backup-remote/archive/refs/heads/main.zip
+unzip linux-web-backup-remote.zip
+cd linux-web-backup-remote-main
+```
+
+Verify:
+
+```bash
+ls
+```
+
+You should see `backup_www.sh`, `README.md`, `LICENSE`.
+
+#### 2. Upload to your server
+
+```bash
+scp backup_www.sh username@your-server-ip:/tmp/
+```
+
+#### 3. Move to the right place on the server
+
+```bash
+ssh username@your-server-ip
+```
+
+On the server:
+
+```bash
+sudo mkdir -p /opt/linux-web-backup-remote
+sudo mv /tmp/backup_www.sh /opt/linux-web-backup-remote/
+sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
+```
+
+✅ Step 0 done. Now continue with
+[🐧 Setup Guide – LINUX users](#-setup-guide-linux-users).
+
+------------------------------------------------------------------------
+
+### 📋 Or copy-paste directly on the server
+
+If you can't or don't want to upload from your local computer, you can
+create the file **directly on the server** through SSH.
+
+#### 1. SSH into your server
+
+#### 2. Open `backup_www.sh` from this project in your browser
+
+Go to:
+https://raw.githubusercontent.com/yamiru/linux-web-backup-remote/main/backup_www.sh
+
+🖱️ Select all (**Ctrl+A** on Win/Linux, **Cmd+A** on Mac) → copy
+(**Ctrl+C** / **Cmd+C**).
+
+#### 3. Create the folder and file on the server
+
+```bash
+sudo mkdir -p /opt/linux-web-backup-remote
+sudo nano /opt/linux-web-backup-remote/backup_www.sh
+```
+
+nano opens an empty editor.
+
+🖱️ **Right-click** to paste *(in PuTTY/Windows Terminal/MobaXterm)*\
+*(In iTerm2/Mac Terminal: Cmd+V)*\
+*(In Linux terminal: Ctrl+Shift+V)*
+
+Save: press **Ctrl+O** → **Enter** → **Ctrl+X**.
+
+#### 4. Make it executable
+
+```bash
+sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
+```
+
+✅ Step 0 done. Now continue with your OS guide below.
 
 ------------------------------------------------------------------------
 ------------------------------------------------------------------------
@@ -68,6 +293,10 @@ Scroll down to the section that matches **your laptop's operating system**:
 
 > Follow this guide if your **laptop or desktop** runs Windows
 > (Windows 10, Windows 11, etc.).
+>
+> ⚠️ Make sure you already finished
+> [📥 Step 0](#-upload-from-windows) — the `backup_www.sh` script must
+> already be on the server.
 
 ------------------------------------------------------------------------
 
@@ -431,23 +660,13 @@ rclone lsd gdrive:
 
 ------------------------------------------------------------------------
 
-## 🪟 Step 8 – Install and run the backup script
+## 🪟 Step 8 – Run the backup script
 
-### 8.1 – Upload the script
+> 📌 The script should already be at
+> `/opt/linux-web-backup-remote/backup_www.sh` from Step 0. If not,
+> go back to [📥 Upload from Windows](#-upload-from-windows).
 
-Use **WinSCP** or **FileZilla** to copy `backup_www.sh` into
-`/opt/linux-web-backup-remote/` on the server.
-
-Or do it from the SSH terminal directly:
-
-```bash
-sudo mkdir -p /opt/linux-web-backup-remote
-sudo nano /opt/linux-web-backup-remote/backup_www.sh
-# paste the script content, then Ctrl+O to save, Ctrl+X to exit
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
-```
-
-### 8.2 – Run it once manually
+Run it manually first:
 
 ```bash
 sudo /opt/linux-web-backup-remote/backup_www.sh
@@ -459,7 +678,7 @@ You should see logs scrolling past, and the last line:
 Backup finished. Saved in /opt/linux-web-backup/backups/...
 ```
 
-### 8.3 – Check Google Drive
+### 8.1 – Check Google Drive
 
 🖱️ Open https://drive.google.com in your browser.
 
@@ -509,6 +728,10 @@ want to change settings.**
 
 > Follow this guide if your **laptop or desktop** is a Mac
 > (macOS / OS X).
+>
+> ⚠️ Make sure you already finished
+> [📥 Step 0](#-upload-from-mac) — the `backup_www.sh` script must
+> already be on the server.
 
 ------------------------------------------------------------------------
 
@@ -794,31 +1017,17 @@ rclone lsd gdrive:
 
 ------------------------------------------------------------------------
 
-## 🍎 Step 8 – Install and run the backup script
+## 🍎 Step 8 – Run the backup script
 
-### 8.1 – Upload the script
-
-From your Mac Terminal, use `scp`:
-
-```bash
-scp backup_www.sh username@your-server-ip:/tmp/
-```
-
-Then on the server (back in SSH):
-
-```bash
-sudo mkdir -p /opt/linux-web-backup-remote
-sudo mv /tmp/backup_www.sh /opt/linux-web-backup-remote/
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
-```
-
-### 8.2 – Run it manually
+> 📌 The script should already be at
+> `/opt/linux-web-backup-remote/backup_www.sh` from Step 0. If not,
+> go back to [📥 Upload from Mac](#-upload-from-mac).
 
 ```bash
 sudo /opt/linux-web-backup-remote/backup_www.sh
 ```
 
-### 8.3 – Check Google Drive
+### 8.1 – Check Google Drive
 
 🖱️ Open https://drive.google.com in your browser.
 
@@ -860,6 +1069,10 @@ want to customize settings.**
 
 > Follow this guide if your **laptop or desktop** runs Linux (Ubuntu,
 > Fedora, Mint, Debian, Arch, etc.).
+>
+> ⚠️ Make sure you already finished
+> [📥 Step 0](#-upload-from-linux-desktop) — the `backup_www.sh` script
+> must already be on the server.
 
 ------------------------------------------------------------------------
 
@@ -1116,31 +1329,17 @@ rclone lsd gdrive:
 
 ------------------------------------------------------------------------
 
-## 🐧 Step 8 – Install and run the backup script
+## 🐧 Step 8 – Run the backup script
 
-### 8.1 – Upload the script
-
-From your local terminal:
-
-```bash
-scp backup_www.sh username@your-server-ip:/tmp/
-```
-
-Then on the server:
-
-```bash
-sudo mkdir -p /opt/linux-web-backup-remote
-sudo mv /tmp/backup_www.sh /opt/linux-web-backup-remote/
-sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
-```
-
-### 8.2 – Run it manually
+> 📌 The script should already be at
+> `/opt/linux-web-backup-remote/backup_www.sh` from Step 0. If not,
+> go back to [📥 Upload from Linux desktop](#-upload-from-linux-desktop).
 
 ```bash
 sudo /opt/linux-web-backup-remote/backup_www.sh
 ```
 
-### 8.3 – Check Google Drive
+### 8.1 – Check Google Drive
 
 🖱️ Open https://drive.google.com.
 
@@ -1330,6 +1529,14 @@ Some SSH clients mangle very long paste content. Try:
 - Maximize the SSH terminal window first
 - Or save the token to a file on your laptop, then upload it via scp
 - Or use Windows Terminal / iTerm2 / kitty (handle long pastes better)
+
+### ❌ "Permission denied" when running the script
+
+Did you forget `chmod +x`? Run:
+
+```bash
+sudo chmod +x /opt/linux-web-backup-remote/backup_www.sh
+```
 
 ------------------------------------------------------------------------
 
