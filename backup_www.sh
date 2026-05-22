@@ -3,7 +3,7 @@
 #  Linux Web Backup Script – Remote (Google Drive via rclone)
 # -----------------------------------------------------------------------------
 #  GitHub:  https://github.com/yamiru/linux-web-backup-remote
-#  Author:  Yamiru <https://yamiru.com/>
+#  Author:  Yamiru </> https://yamiru.com 
 #  License: MIT
 # -----------------------------------------------------------------------------
 #  Description:
@@ -13,6 +13,10 @@
 #                                  into its own .tar.gz (like MySQL per-database)
 #      - SPLIT_BY_SUBDIR=false  -> each path in SOURCES is backed up as one
 #                                  full .tar.gz archive
+#    Two ways to exclude things:
+#      - EXCLUDE_SUBDIRS   -> skip whole top-level subdirs in SPLIT mode
+#      - EXCLUDE_PATTERNS  -> tar --exclude patterns, works in BOTH modes
+#                             (e.g. cache, *.log, node_modules)
 #    Backups and logs are stored in separate, configurable folders.
 #    Each backup is uploaded to Google Drive (or any rclone remote).
 #    Local, Drive, and log retention are rotated by count.
@@ -61,6 +65,24 @@ _letsencrypt
 EOF
 )
 
+# === Excluded paths/patterns inside archives (used in BOTH modes) ===
+# Passed to tar via --exclude. Supports glob patterns (* ? [..]).
+# Match works against the path inside the archive.
+# Examples:
+#   cache              -> any folder named "cache" at any depth
+#   *.log              -> all .log files anywhere
+#   node_modules       -> any "node_modules" folder
+#   web1/tmp           -> only the tmp folder inside web1
+#   */storage/logs     -> logs subfolder of storage in any site
+EXCLUDE_PATTERNS=$(cat <<'EOF'
+cache
+tmp
+.git
+node_modules
+*.log
+EOF
+)
+
 # === Google Drive upload (rclone) ===
 # Requires `rclone` installed and a configured remote.
 # Quick setup:
@@ -91,6 +113,12 @@ log() { echo "[$(date +'%F %T')] $*" | tee -a "$LOG_FILE"; }
 
 mkdir -p "$TODAYS_BACKUP_DIR"
 log "--- WWW Backup started (mode: $([ "$SPLIT_BY_SUBDIR" = "true" ] && echo SPLIT || echo FULL)) ---"
+
+# Count active exclude patterns
+ACTIVE_PATTERNS=$(echo "$EXCLUDE_PATTERNS" | grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | wc -l)
+if [ "$ACTIVE_PATTERNS" -gt 0 ]; then
+    log "Active exclude patterns: $ACTIVE_PATTERNS (see EXCLUDE_PATTERNS in script)"
+fi
 
 # Check tar
 if ! command -v tar >/dev/null 2>&1; then
@@ -132,7 +160,17 @@ archive_path() {
     PARENT=$(dirname "$SRC")
     TARGET=$(basename "$SRC")
 
+    # Build --exclude arguments from EXCLUDE_PATTERNS
+    local TAR_EXCLUDES=()
+    while IFS= read -r PAT; do
+        PAT="${PAT%%#*}"
+        PAT="$(echo "$PAT" | xargs)"
+        [ -z "$PAT" ] && continue
+        TAR_EXCLUDES+=("--exclude=$PAT")
+    done <<< "$EXCLUDE_PATTERNS"
+
     if tar --warning=no-file-changed --warning=no-file-removed \
+            "${TAR_EXCLUDES[@]}" \
             -C "$PARENT" -cf - "$TARGET" 2>>"$LOG_FILE" | gzip -9 > "$BACKUP_FILE"; then
         if [ -s "$BACKUP_FILE" ]; then
             log "OK: $SRC saved ($(du -h "$BACKUP_FILE" | cut -f1))"
